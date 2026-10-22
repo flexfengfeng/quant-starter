@@ -4,13 +4,13 @@ export PYTHONPATH := src
 .PHONY: help run validate audit orders size explain test clean
 
 help:
-	@echo "make run       backtest + audit + HTML report  (start here)"
-	@echo "make validate  data contract checks"
-	@echo "make audit     six self-deception probes only"
-	@echo "make explain   today's factor percentiles"
-	@echo "make orders    target orders for the paper account (no broker)"
-	@echo "make size      how many names your capital can afford"
-	@echo "make test      unit tests"
+	@echo "make run       backtest + audit + HTML report  /  回测 + 自检 + 报告  (start here / 从这里开始)"
+	@echo "make validate  data contract checks  /  数据契约检查"
+	@echo "make audit     six self-deception probes  /  六项自欺检查"
+	@echo "make explain   today's factor percentiles  /  今日因子百分位"
+	@echo "make orders    target orders, paper only  /  纸面目标订单（不连券商）"
+	@echo "make size      how many names your capital can afford  /  资金能养几个仓位"
+	@echo "make test      unit tests  /  单元测试"
 
 run: validate
 	@$(PY) -m qs run

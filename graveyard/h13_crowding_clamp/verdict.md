@@ -1,36 +1,44 @@
-# 裁决 H13 — 采纳 4 天后被证伪并移除
+> **English** · [中文](verdict.zh.md)
 
-> **日期**：2026-08-28 采纳 → 2026-09-01 移除
-> **复现**：不可在本 repo 复现（机制未实现）；本目录用于**格式示例**
+# Verdict H13 — adopted, then falsified four days later
 
-## 初步结果（2026-08-28）
+> **Date**: adopted 2026-08-28 → removed 2026-09-01
+> **Reproduce**: not reproducible in this repo (mechanism not implemented); this
+> directory exists as a **format example**
 
-Sharpe +0.017，过 G3 → 采纳，写入配置。
+## Initial result (2026-08-28)
 
-## 重审结果（2026-09-01，引擎 NaN 修复后）
+Sharpe +0.017, G3 passed → adopted into config.
 
-| 指标 | 基线 | 钳制臂 |
+## Re-run after the engine's NaN fix (2026-09-01)
+
+| Metric | Baseline | Clamp arm |
 |---|---|---|
 | Sharpe | 1.169 | **1.103** |
 | CAGR | — | **−1.83pp** |
-| 换手 | — | **+15.9pp** |
+| Turnover | — | **+15.9pp** |
 
-**结论：净损失，从配置中移除，仅保留监控信号。**
+**Conclusion: a net loss. Removed from config; only the monitoring signal remains.**
 
-## 为什么这不是"运气不好"
+## Why this is not "bad luck"
 
-修复前那次运行存在**选股顺序错乱**（NaN 导致的排序不稳定），
-"+0.017 Sharpe" 是乱序选股下的伪信号，不是机制真的有效。
+The pre-fix run had **scrambled stock selection** (NaN caused unstable ordering).
+The "+0.017 Sharpe" was a spurious signal produced by wrong ordering, not by a
+real mechanism.
 
-## 三条可迁移的教训
+## Three transferable lessons
 
-1. **"通过关卡" ≠ "结论成立"**——它只等于"在当时的引擎下通过"。
-   引擎正确性本身是需要被检验的假设。
-2. **修复 bug 后，所有依赖它的裁决都要重跑**，不能只重跑被怀疑的那一条。
-3. **只改善 0.017 Sharpe 的机制，一开始就不该进实盘**。门槛要按信噪比设，
-   而不是按 p 值设——太小的改善更可能来自噪声。
+1. **"Passed the gate" ≠ "the conclusion holds"** — it only means "passed under the
+   engine of that moment". Engine correctness is itself an assumption to be tested.
+2. **After fixing a bug, re-run every verdict that depended on it** — not just the
+   one you suspect.
+3. **A mechanism that improves Sharpe by 0.017 should never have reached live
+   money.** Set thresholds by signal-to-noise, not by p-value: a tiny improvement
+   is more likely to be noise.
 
-## 元数据
+## Metadata
 
-原裁决文档：参考实现 `docs/experiments/h13_crowding_clamp_verdict.md`。
-本目录是该文档的**教学化摘要**，数字与结论保持一致，不含原实现的代码路径。
+Original verdict document: reference implementation
+`docs/experiments/h13_crowding_clamp_verdict.md`. This directory is a **teaching
+summary** of that document; the numbers and conclusions match, without the
+original code paths.

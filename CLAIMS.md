@@ -1,25 +1,29 @@
-# CLAIMS — 每个数字的单一来源
+> **English** · [中文](CLAIMS.zh.md)
 
-> 规则：README / 报告里出现的**任何一个数字**，都必须能在这个文件里找到
-> ①口径 ②证据等级 ③复现命令 ④已知偏差。找不到 = 不许引用。
-> 这是从参考实现继承来的最贵的一条纪律；它就是"口径单一来源"。
+# CLAIMS — the single source of truth for every number
+
+> Rule: **any number** appearing in the README or the report must have, in this
+> file, (1) its measurement basis, (2) its evidence grade, (3) a reproduce
+> command, and (4) its known bias. Missing = not quotable.
+> This is the most expensive discipline inherited from the reference
+> implementation; it is what "single source of truth" means in practice.
 
 ---
 
-## 0. 当前口径
+## 0. Current basis
 
-| 项 | 值 |
+| Item | Value |
 |---|---|
-| 代码版本 | `git describe --tags`（写入时 v0-run） |
-| 输入指纹 | `reports/manifest.json` → `fingerprint` |
-| 收益指纹 | `reports/manifest.json` → `returns_fingerprint` |
-| 窗口 | 2014-04-01 .. 2026-09-30（2013 年为动量 warm-up） |
-| 样本 | 45 只美股大盘，2013-01-02 起价格，季度财报 |
-| 再平衡 | 季度，决策日收盘 → 次日收盘成交 |
-| 成本 | 佣金 0bp + 滑点 8bp 单边 |
-| PIT | 财报期末 + 45 天 |
+| Code version | `git describe --tags` (at time of writing: v0-run) |
+| Input fingerprint | `reports/manifest.json` → `fingerprint` |
+| Returns fingerprint | `reports/manifest.json` → `returns_fingerprint` |
+| Window | 2014-04-01 .. 2026-09-30 (2013 is the momentum warm-up) |
+| Sample | 45 US large caps; prices from 2013-01-02, quarterly fundamentals |
+| Rebalance | quarterly; decide at close, fill at the next close |
+| Costs | 0bps commission + 8bps one-way slippage |
+| PIT | fiscal period end + 45 days |
 
-复现：
+Reproduce:
 
 ```bash
 make run && cat reports/manifest.json
@@ -27,65 +31,75 @@ make run && cat reports/manifest.json
 
 ---
 
-## 1. 主结果（口径：survivor-biased sample，见 §3）
+## 1. Headline result (basis: survivor-biased sample — see §3)
 
-| 指标 | 值 | 命令 | 证据等级 |
+| Metric | Value | Command | Evidence grade |
 |---|---|---|---|
-| CAGR | 14.47% | `make run` | 单样本，有偏 |
-| SPY CAGR | 13.68% | 同上（benchmark 列） | — |
-| 年化超额 | **+0.79pp** | 同上 | **t=0.23，与零无法区分** |
-| Sharpe | 0.892 | 同上 | — |
-| 最大回撤 | −26.87% | 同上 | — |
-| 年换手 | 68% | 同上 | 结构成本 |
-| 成本拖累 | 0.06pp/年 | 同上 | 8bp × 换手 |
-| 平均 IC | 0.008 | 同上 | 近似为零 |
-| 近 3 年超额 | +5.5pp | 同上 | 噪声区间内 |
-| 近 5 年超额 | +4.8pp | 同上 | 噪声区间内 |
+| CAGR | 14.47% | `make run` | single sample, biased |
+| SPY CAGR | 13.68% | same (benchmark row) | — |
+| Annualised excess | **+0.79pp** | same | **t=0.23, indistinguishable from zero** |
+| Sharpe | 0.892 | same | — |
+| Max drawdown | −26.87% | same | — |
+| Annual turnover | 68% | same | structural cost |
+| Cost drag | 0.06pp/yr | same | 8bps × turnover |
+| Mean IC | 0.008 | same | essentially zero |
+| Trailing 3y excess | +5.5pp | same | inside the noise band |
+| Trailing 5y excess | +4.8pp | same | inside the noise band |
 
-**结论口径（写进任何汇报都必须带上）**：这套策略在 2014–2026 单一样本上
-年化跑赢 SPY 约 1pp，但 t 值 0.22、平均 IC 0.008，**无法与运气区分**。
-它不是"有效策略"，它是"可以被审计的对象"。
+**Mandatory framing (must accompany any quote)**: over this single 2014–2026
+sample the strategy beats SPY by about 1pp a year, but t = 0.23 and mean IC = 0.008.
+**It cannot be distinguished from luck.** It is not "a working strategy"; it is
+"an auditable object".
 
 ---
 
-## 2. 审计数字（`make audit`）
+## 2. Audit numbers (`make audit`)
 
-| 探针 | 数字 | 读法 |
+| Probe | Numbers | How to read it |
 |---|---|---|
-| 数据时点带 | −45/0/+45/+90 天 → 14.7 / 14.5 / 14.5 / 14.8% | 仅移动"何时知道"就 0.3pp |
-| 执行滞后 | 同日 14.89% vs 次日 14.47% | 假设的价格 = 0.42pp |
-| 成本 | 0/8/24bp → 14.52 / 14.47 / 14.35% | 24bp 下超额仍 +0.67pp |
-| 集中度 | 前 3 名占毛收益 28% | 不是单票赌注 |
-| Beta / Alpha | 0.83 / +2.98% | 低波组合，alpha 不显著 |
-| 显著性 | t = 0.23 | **FAIL** |
+| Data-timing band | −45/0/+45/+90 days → 14.7 / 14.5 / 14.5 / 14.8% | moving "when I knew" costs 0.3pp |
+| Execution lag | same-close 14.89% vs next-day 14.47% | the assumption costs 0.42pp |
+| Costs | 0/8/24bps → 14.52 / 14.47 / 14.35% | still +0.67pp excess at 24bps |
+| Concentration | top-3 names = 28% of gross P&L | not a single-stock bet |
+| Beta / Alpha | 0.83 / +2.98% | low-vol portfolio, alpha insignificant |
+| Significance | t = 0.23 | **FAIL** |
 
 ---
 
-## 3. 已知偏差（最重要的部分）
+## 3. Known biases (the most important section)
 
-1. **存活者偏差（最大）**——样本是 45 只"今天仍上市且有完整历史"的名字。
-   退市、被并购、指数剔除的公司全部不在样本内。因此本 repo 的所有收益都是**上界**。
-   参考实现里同一策略在纳入 165 只退市股后，年化从 13.11% 降到 9.89%（−3.22pp）。
-2. **宇宙选择偏差**——45 只全是美国大盘，且科技/医疗权重偏高。动量因子在这种面板上
-   天然占便宜（见 `graveyard/h001_momentum_weight/`）。
-3. **财报重述**——数据源给的是最新修订值，早期年份的回测可能"看到了后来的数字"。
-4. **无股息**——价格是前复权，不含股息；相对总收益基准会低估 1–1.5pp/年。
-5. **市值是估算值**——股数由 TTM 净利润 / TTM 基本 EPS 反推，不精确。
-6. **税务与汇兑**——默认关闭（`fx_one_way_bps=0`、`dividend_tax_drag_annual=0`）；
-   新加坡投资者的真实拖累约 0.4–0.5pp/年（30% 股息预扣），需要手动打开。
+1. **Survivorship bias (largest)** — the sample is 45 names that are *still listed
+   today and have complete history*. Delisted, acquired and index-removed
+   companies are entirely absent. So every return in this repo is an **upper
+   bound**. In the reference implementation, adding 165 delisted names took CAGR
+   from 13.11% to 9.89% and excess from −0.75pp to −3.69pp.
+2. **Universe-selection bias** — 45 US large caps, technology/health care
+   over-weighted. Momentum gets an unfair advantage on such a panel (see
+   `graveyard/h001_momentum_weight/`).
+3. **Financial restatements** — the source serves latest-revised values, so early
+   years may "see" numbers that were published later.
+4. **No dividends** — prices are split-adjusted, not total-return; this
+   understates the benchmark by roughly 1–1.5pp/yr.
+5. **Market cap is an estimate** — share count is backed out of TTM net income /
+   TTM basic EPS, which is approximate.
+6. **Taxes and FX are off by default** (`fx_one_way_bps=0`,
+   `dividend_tax_drag_annual=0`); the real drag for a Singapore investor is about
+   0.4–0.5pp/yr (30% dividend withholding). Turn it on manually.
 
 ---
 
-## 4. 与参考实现的关系
+## 4. Relationship to the reference implementation
 
-本 repo 的策略、参数与审计口径来自参考实现（一个演进了 2 个月、31 张假设卡、
-15+ 个被证伪假设的系统）。两者的差别是**有意的**：
+The strategy, parameters and audit discipline come from a reference
+implementation (two months, 31 hypothesis cards, 15+ falsified hypotheses). The
+differences here are **deliberate**:
 
-| | 参考实现 | 本 repo |
+| | Reference | This repo |
 |---|---|---|
-| 代码量 | ~42k 行 | ~2k 行 |
-| 宇宙 | 508 / 673（含退市） | 45（不含退市） |
-| 结论 | +1.93pp，t≈0.85，H31「无法判定」 | +0.79pp，t=0.23 |
-| 用途 | 生产/研究 | 教学/起点 |
+| Code size | ~42k lines | ~2k lines |
+| Universe | 508 / 673 (incl. delisted) | 45 (no delisted) |
+| Conclusion | +1.93pp, t≈0.85, H31 "inconclusive" | +0.79pp, t=0.23 |
+| Purpose | production / research | teaching / starting point |
 
-**不要把本 repo 的数字和参考实现的数字相减**——它们差的是口径，不是策略。
+**Never subtract this repo's numbers from the reference's** — they differ in
+basis, not in strategy.

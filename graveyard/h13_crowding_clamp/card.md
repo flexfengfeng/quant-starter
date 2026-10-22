@@ -1,36 +1,43 @@
-# 假设卡片 H13 — 因子拥挤度钳制（参考实现归档）
+> **English** · [中文](card.zh.md)
 
-> **状态**：已证伪并移除 · **类别**：格式示例（本 repo 未实现该机制，无法运行）
-> **来源**：参考实现（一个 2 个月、31 张假设卡的系统）2026-08-28 预注册
+# Hypothesis card H13 — factor-crowding clamp (archived from the reference implementation)
 
-## 1. 来源观点
+> **Status**: falsified and removed · **Type**: format example (this repo does not
+> implement the mechanism, so it cannot be run here)
+> **Source**: reference implementation (two months, 31 hypothesis cards), pre-registered 2026-08-28
 
-因子被广泛采纳后，边际交易不再产生 alpha：波动放大、负自相关、IC 衰减、
-与市场相关上升，这四个症状**可观测**。因此，对拥挤度 > 0.75 的因子降权，
-应当在不牺牲收益的前提下降低组合对拥挤因子的暴露。
+## 1. Source claim
 
-## 2. 机制定义
+Once a factor is widely adopted, marginal trading stops producing alpha: volatility
+rises, autocorrelation turns negative, IC decays, and correlation with the market
+rises. These four symptoms are **observable**. Therefore clamping the weight of
+factors with crowding > 0.75 should reduce exposure to crowded factors without
+sacrificing return.
 
-- 拥挤度分数 = 波动率百分位 / 负自相关 / IC 衰减 / 市场相关百分位的均值（0–1，walk-forward）。
-- 在 IC_IR 权重算完之后，把拥挤度 > 0.75 的因子权重钳到 0.05，
-  释放的预算按比例分给非拥挤因子（单因子封顶 0.60）。
-- 拥挤度分数**滞后一期**注入，保证零前视。
+## 2. Mechanism definition
 
-## 3. 预注册关卡
+- Crowding score = mean of volatility percentile / negative autocorrelation / IC
+  decay / market-correlation percentile (0–1, walk-forward).
+- After IC_IR weights are computed, clamp each factor with crowding > 0.75 to a
+  0.05 floor; redistribute the freed budget proportionally to non-crowded factors
+  (single-factor cap 0.60).
+- Crowding scores are injected **lagged one period**, guaranteeing no look-ahead.
 
-| 关卡 | 判据 |
+## 3. Pre-registered gates
+
+| Gate | Criterion |
 |---|---|
-| G1 | 超额收益不比基线差 |
-| G2 | 最大回撤不比基线差 |
-| G3 | Sharpe 不比基线低（允许 +0 容差） |
+| G1 | excess return no worse than baseline |
+| G2 | max drawdown no worse than baseline |
+| G3 | Sharpe no lower than baseline (zero tolerance) |
 
-**预测**：G1–G3 全部通过，Sharpe 小幅改善。
+**Prediction**: G1–G3 all pass, Sharpe improves slightly.
 
-## 4. 禁止事项
+## 4. Not allowed
 
-- 不允许看到结果后改阈值（0.75）再跑。
-- 不允许只报 Sharpe 不报换手与 CAGR。
+- No changing the threshold (0.75) after seeing results.
+- No reporting Sharpe without turnover and CAGR.
 
-## 5. 结果
+## 5. Result
 
-见 `verdict.md`。
+See `verdict.md`.

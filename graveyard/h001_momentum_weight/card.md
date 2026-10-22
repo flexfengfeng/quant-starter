@@ -1,44 +1,50 @@
-# 假设卡片 H-001 — 动量权重 0.125 是否值得保留？
+> **English** · [中文](card.zh.md)
 
-> **状态**：已裁决（见 `verdict.md`）
-> **日期**：2026-10-22
-> **数据**：`data/sample/`（45 只美股大盘，2014-01-02 .. 2026-09-30）
-> **基线**：`config/strategy.yaml` 冻结版本，3 因子 0.50 / 0.375 / 0.125
+# Hypothesis card H-001 — Is the 0.125 momentum weight worth keeping?
+
+> **Status**: verdict recorded (see `verdict.md`)
+> **Date**: 2026-10-22
+> **Data**: `data/sample/` (45 US large caps, 2014-04-01 .. 2026-09-30)
+> **Baseline**: the frozen `config/strategy.yaml`, three factors 0.50 / 0.375 / 0.125
 
 ---
 
-## 1. 来源观点
+## 1. Source claim
 
-当前配置给 12-1 动量 0.125 的权重，但样本内平均 IC ≈ 0.008，接近零。
-一个 IC 接近零的因子，凭什么拿 12.5% 的权重？直觉的答案是：它在做分散化，
-或者它对极少数大赢家敏感，而均值 IC 掩盖了这一点。
+The current config gives 12-1 momentum a 0.125 weight, yet its in-sample mean IC
+is ≈ 0.008, essentially zero. Why should a factor with no IC keep 12.5% of the
+budget? The intuitive answer: it diversifies, or it captures a few big winners
+that mean IC averages away.
 
-**提炼为可测观点**：把动量权重设为零、其余两因子按比例归一（0.5714 / 0.4286），
-组合的收益/风险不应有实质变化；若变化超过 ±1pp，说明动量的贡献不是"分散化"，
-而是某种我们在样本里看不见的东西。
+**Testable claim**: set the momentum weight to zero and renormalise the other two
+(0.5714 / 0.4286). Return and risk should not change materially; if they change by
+more than ±1pp, momentum's contribution is not "diversification" but something we
+cannot see in this sample.
 
-## 2. 机制
+## 2. Mechanism
 
-动量的经典解释是行为（反应不足）与套利受限。但在**45 只存活至今的大盘股**面板上，
-12-1 动量很可能只是"过去一年涨得好的大科技继续涨"的代理——那是幸存者偏差 +
-科技 beta，不是因子溢价。
+The classic case for momentum is behavioural (under-reaction) plus limits to
+arbitrage. But on a panel of **45 large caps that survived to today**, 12-1
+momentum is likely a proxy for "the big tech names that went up keep going up" —
+survivorship bias plus tech beta, not a factor premium.
 
-## 3. 预注册关卡（在跑之前锁定）
+## 3. Pre-registered gates (locked before the run)
 
-| 关卡 | 判据 | 含义 |
+| Gate | Criterion | Meaning |
 |---|---|---|
-| G1 | \|ΔCAGR\| ≤ 1.0pp | 动量只是分散化，可移除（简化系统） |
-| G2 | ΔCAGR < −1.0pp | 动量有贡献，但必须解释"贡献从哪来" |
-| G3 | ΔSharpe ≥ −0.05 且 ΔMDD ≤ +1pp | 移除后风险未恶化 |
+| G1 | \|ΔCAGR\| ≤ 1.0pp | momentum is just diversification; removable (simpler system) |
+| G2 | ΔCAGR < −1.0pp | momentum contributes, but then explain *where from* |
+| G3 | ΔSharpe ≥ −0.05 and ΔMDD ≤ +1pp | removing it does not worsen risk |
 
-**预测（写于跑之前）**：G1 成立，\|ΔCAGR\| < 0.5pp。
+**Prediction (written before running)**: G1 holds, \|ΔCAGR\| < 0.5pp.
 
-## 4. 不允许事后做的事
+## 4. Not allowed after the fact
 
-- 不允许在看完结果后调整权重再"重跑跑看"。
-- 不允许把结论写成"动量有效"——单一样本 + 有偏宇宙，不足以支持因果。
+- No adjusting the weights and "re-running to see" after seeing the result.
+- No writing "momentum works" — one sample on a biased universe cannot support a
+  causal claim.
 
-## 5. 复现
+## 5. Reproduce
 
 ```bash
 ./graveyard/h001_momentum_weight/reproduce.sh

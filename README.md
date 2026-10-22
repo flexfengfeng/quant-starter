@@ -1,29 +1,32 @@
+> **English** · [中文](README.zh.md)
+
 # quant-starter
 
-> 一个**小、诚实、可复现**的个人量化系统骨架。跑起来 5 分钟，读懂一周，改到退休。
+> A **small, honest, reproducible** skeleton for a personal quant system.
+> Five minutes to run, a week to read, a lifetime to adjust.
 >
-> *A small, honest, reproducible personal quant system — built for learning, safe to start with.*
+> *一个**小、诚实、可复现**的个人量化系统骨架。跑起来 5 分钟，读懂一周，改到退休。*
 
 ```bash
 git clone <this-repo> && cd quant-starter
-make run          # 约 8 秒：回测 + 六项自检 + HTML 报告
+make run          # ~8 seconds: backtest + six-probe audit + HTML report
 open reports/report.html
 ```
 
 ---
 
-## TL;DR (English)
+## TL;DR
 
 This repo is not a strategy library. It is a **teaching machine**: one boring
-quarterly portfolio, four replaceable layers, nine invariant tests, and an audit
+quarterly portfolio, four replaceable layers, ten invariant tests, and an audit
 that is designed to tell you *no*. It runs offline on a frozen dataset, produces
-the same numbers on any machine, and its headline result is **honest but
+identical numbers on any machine, and its headline result is **honest but
 unimpressive**: +0.79pp annual excess over SPY with t = 0.23. That is the first
 lesson — a backtest that looks fine is not the same thing as an edge.
 
 ---
 
-## 1. 跑起来你会看到什么
+## 1. What you see when it runs
 
 ```
 start                  2014-04-01
@@ -31,7 +34,7 @@ end                    2026-09-30
 cagr                      14.47%
 benchmark_cagr            13.68%
 excess_cagr                0.79%
-excess_t_stat             0.226      <- 与零无法区分
+excess_t_stat             0.226      <- indistinguishable from zero
 sharpe                    0.892
 max_drawdown             -26.87%
 turnover_annual           0.685
@@ -39,120 +42,141 @@ cost_drag_annual          0.001
 mean_ic                   0.008
 ```
 
-然后 `make run` 会打出六项自检：
+Then `make run` prints six self-checks:
 
-| 检查 | 结果 | 含义 |
+| probe | result | meaning |
 |---|---|---|
-| 数据时点带 | 0.3pp | 只把"何时知道财报"挪一个季度，年化就差 0.3pp |
-| 执行滞后 | +0.42pp | 同日成交 vs 次日成交的差价 |
-| 成本敏感 | 24bp 下仍 +0.67pp | 这个策略扛得住成本 |
-| 集中度 | 前 3 名占 28% | 不是赌一只票 |
-| Beta / Alpha | 0.83 / +2.98% | 比市场波动更低，却略胜 |
-| **显著性** | **FAIL (t=0.23)** | **证据不足以下注** |
+| Data-timing band | 0.3pp | moving "when did I know it" by one quarter changes annual return by 0.3pp |
+| Execution lag | +0.42pp | the price of same-close vs next-day fills |
+| Cost sensitivity | still +0.67pp at 24bps | the strategy survives costs |
+| Concentration | top-3 names = 28% of P&L | it is not a single-stock bet |
+| Beta / Alpha | 0.83 / +2.98% | lower volatility than the market, and slightly ahead |
+| **Significance** | **FAIL (t=0.23)** | **not enough evidence to bet** |
 
-**唯一正确的读法**：这套系统机械上是完整的，但它目前的超额收益**在统计上无法与零区分**。repo 的目标不是让你相信它，而是让你有能力**亲手判断任何一套系统**——包括这一套。
-
----
-
-## 2. 它不会做什么
-
-- 不承诺 alpha，不提供"稳赚"参数，不隐藏失败。
-- 不做高频/日内/做空/杠杆（个人在这些层级必输，见 `docs/adr/`）。
-- 不把 LLM 的情绪判断塞进回测（那是未来的模块，不是现在的证据）。
-- 不帮你绕过实盘闸门（见 §6）。
+**The only correct reading**: the system is mechanically complete, but its excess
+return **cannot be distinguished from zero**. The point of the repo is not to
+make you believe it — it is to give you the ability to judge *any* system,
+including this one, with your own hands.
 
 ---
 
-## 3. 仓库地图
+## 2. What it will not do
+
+- It does not promise alpha, sell "proven" parameters, or hide its failures.
+- No HFT / intraday / shorting / leverage (individuals lose at those layers —
+  see `docs/adr/`).
+- No LLM sentiment inside the backtest (that is a future module, not evidence).
+- It will not help you bypass the live-money gate in §6.
+
+---
+
+## 3. Repo map
 
 ```
-config/strategy.yaml      唯一参数文件。每一步调整都从改这里开始
+config/strategy.yaml      the only parameter file; every adjustment starts here
 src/qs/
-  config.py               参数 -> 数据结构，未知键直接报错（防手滑）
+  config.py               config -> dataclasses, unknown keys raise (anti-typo)
   data/
-    loader.py             读数据。原始数据保持原始，不做隐式清洗
-    validate.py           数据契约：重复/缺失/缺口/未来数据 -> 大声失败
-    features.py           ★ available_fundamentals()：PIT 的全部保证就这一处
-    manifest.py           输入指纹 + 收益指纹：让"同一次运行"可被检验
+    loader.py             reads data; raw stays raw, no implicit cleaning
+    validate.py           data contract: duplicates/gaps/future data -> fail loudly
+    features.py           * available_fundamentals(): the entire PIT guarantee
+    manifest.py           input + returns fingerprints, so "same run" is testable
   strategy/
-    portfolio.py          Top-N + 缓冲带 + 单票/行业上限 -> 目标权重
-    sells.py              两条卖出规则里更反直觉的一条：质量恶化
+    portfolio.py          Top-N + buffer band + name/sector caps -> target weights
+    sells.py              the less obvious of the two sell rules: quality decay
   backtest/
-    engine.py             季度 walk-forward，决策日收盘 -> 次日收盘成交
-    costs.py              佣金 + 滑点 + FX 一次性成本
-    audit.py              ★ 六项自检：它的工作是证明你错了
-    metrics.py            CAGR/Sharpe/MDD/超额/t 值，全部可手算
+    engine.py             quarterly walk-forward, decide at close -> fill next close
+    costs.py              commission + slippage + one-off FX
+    audit.py              * six probes: its job is to prove you wrong
+    metrics.py            CAGR/Sharpe/MDD/excess/t-stat, all hand-computable
   live/
-    dryrun.py             纸面账户 + 目标订单（不连券商）
-    sizing.py             ★ 你的资金能养几个仓位（固定费用是隐形杀手）
-  report/dashboard.py     单文件 HTML，手搓 SVG，零依赖
-tests/                    10 个不变量测试：替换任何模块后由它们守门
-graveyard/                证伪档案：先预测，再看答案
-docs/                     ADR + 工作坊五天
+    dryrun.py             paper account + target orders (no broker connection)
+    sizing.py             * how many positions your capital can afford
+  report/dashboard.py     single-file HTML, hand-built SVG, zero dependencies
+tests/                    10 invariant tests: the referee when you replace a module
+graveyard/                falsification archive: predict first, then look
+docs/                     ADRs + the five-day workshop
 ```
 
+Docs are paired: `X.md` is English, `X.zh.md` is 中文. Every doc starts with a
+language switch, so a student who reads only English never lands on a Chinese page.
+
 ---
 
-## 4. 递归学习：四层台阶
+## 4. Recursive learning: four levels
 
-每一层都能独立替换——这就是"递归"。替换后跑 `make test`，测试告诉你有没有破坏整体。
+Each level is independently replaceable — that is what "recursive" means here.
+After replacing something, run `make test`; the tests tell you whether you broke
+the system's promises.
 
-| 层 | 你做什么 | 过关问题 |
+| Level | What you do | Acceptance question |
 |---|---|---|
-| **L0 跑** | `make run` | 换台机器重跑，数字一样吗？为什么？ |
-| **L1 改** | 改 `top_n` / `rebalance` / 权重 / 成本 | 变化是策略效应还是噪声？用 `make audit` 回答 |
-| **L2 换** | 换掉 `features.py` 或 `portfolio.py` | 测试还绿吗？样本外更好吗？ |
-| **L3 加** | 加一个新环节：上云、接券商、写新假设卡 | 你的新发现能过 `graveyard/` 里的标准吗？ |
+| **L0 run** | `make run` | Re-run on another machine — same numbers? Why? |
+| **L1 change** | change `top_n` / `rebalance` / weights / costs | strategy effect or noise? use `make audit` |
+| **L2 replace** | swap out `features.py` or `portfolio.py` | are tests still green? is it better out-of-sample? |
+| **L3 add** | add a whole new stage: cloud, broker, a new hypothesis card | would your finding survive `graveyard/`? |
 
-`LEARNING_PATH.md` 给出了每一层的**具体练习 + 预期结果**。练习是有答案的：你可以故意做错，然后看审计怎么抓住你。
+`LEARNING_PATH.md` gives the concrete exercises and the expected outcome for each
+level. The exercises are answerable on purpose: you can do them wrong and watch
+the audit catch you.
 
 ---
 
-## 5. 策略规格（当前唯一配置）
+## 5. Strategy specification (the one and only config)
 
-| 项 | 值 |
+| Item | Value |
 |---|---|
-| 宇宙 | 45 只美股大盘（样本，见 CLAIMS） |
-| 因子 | FCF 收益率 0.50 / 质量 0.375 / 12-1 动量 0.125 |
-| 选股 | Top 12，缓冲带 2×，单票 ≤12%，行业 ≤35% |
-| 再平衡 | 季度，决策日收盘 → 次日收盘成交 |
-| 卖出 | 排名跌出 Top 24；或质量落到底部 25% 且再跌 30% |
-| 成本 | 佣金 0 + 滑点 8bp 单边 |
-| PIT | 财报期末 + 45 天可用（可配，可被审计） |
+| Universe | 45 US large caps (sample; see `CLAIMS.md`) |
+| Factors | FCF yield 0.50 / Quality 0.375 / 12-1 Momentum 0.125 |
+| Selection | Top 12, 2× buffer band, ≤12% per name, ≤35% per sector |
+| Rebalance | quarterly; decide at close, fill the next close |
+| Sells | falls out of Top 24; or quality in bottom 25% and down another 30% |
+| Costs | 0bps commission + 8bps one-way slippage |
+| PIT | fundamentals usable 45 days after fiscal period end (configurable, auditable) |
 
-设计理由与替代方案见 `docs/adr/001-three-factors.md`。
-
----
-
-## 6. 实盘闸门（不要跳过）
-
-工作坊结束时应该停在**纸面账户**，不是真钱。真钱的顺序是写死的：
-
-1. 一个完整季度纸面运行（12 周），每周记录目标 vs 实际。
-2. 通过后，用 **20%** 的计划资金实盘一个季度。
-3. 四个季度后、且 `CLAUDE.md`/`AGENTS.md` 里的纪律未被违反，才考虑全额。
-4. 任何时刻触发 kill switch（单日 -5% / 累计 -15% / 数据校验连续失败）→ 停止自动交易，转人工。
-
-新加坡投资者的三个具体约束（不是代码问题）：美股股息 **30% 预扣**、**US$60,000 以上**美国境内资产的**遗产税**暴露、以及 100% 换手被 IRAS 认定为"交易性收入"的风险。`make size` 会把前两条算进你的仓位。
+Design rationale and rejected alternatives: `docs/adr/001-three-factors.md`.
 
 ---
 
-## 7. 数据的来历与局限
+## 6. The live-money gate (do not skip it)
 
-样本数据从参考实现（moomoo OpenAPI + Yahoo）的本地缓存冻结而来，见 `tools/build_sample.py`。
-**它天然有存活者偏差**：45 只都是"今天还活着并且有完整历史"的名字。因此：
+The workshop should end at a **paper account**, not at real money. The order is
+fixed:
 
-> 本 repo 的任何数字都是**上界**，不是预期收益。`CLAIMS.md` 里每个数字都标注了这一点。
+1. One full quarter of paper trading (12 weeks), recording target vs actual weekly.
+2. If it passes, **20%** of planned capital live for one quarter.
+3. After four quarters, with the rules in `AGENTS.md` still unbroken, consider the full amount.
+4. Any time the kill switch fires (single day −5% / cumulative −15% / repeated
+   data-contract failures) → stop automated trading and go manual.
 
-想换成自己的宇宙？`data/sample/` 的四个 CSV 就是全部接口，替换即可，数据契约会先拦你一遍。
+Three constraints specific to a Singapore investor (and *not* coding problems):
+**30% US dividend withholding**, **US estate-tax exposure above US$60,000** of
+US-situs stock, and the risk that ~100% turnover is treated as "trading income"
+by IRAS. `make size` prices the first two into your position size.
 
 ---
 
-## 8. 更新日志（每一次改动都必须留痕）
+## 7. Where the data comes from, and what it costs
 
-- `v0-run` 首次跑通
-- `v1-audit` 六项自检上线（第一次诚实地承认不显著）
-- `v2-paper` 纸面账户与订单
-- `v3-size` 资金规模 → 仓位数量 → 成本
+The sample is frozen from the reference implementation's local cache (moomoo
+OpenAPI + Yahoo); see `tools/build_sample.py`. **It is survivorship-biased by
+construction**: all 45 names are still listed today and have complete history.
+Therefore:
 
-git tag 就是课程维度：`git diff v1-audit..v2-paper` 看到"加一个纸面环节"到底改了什么。
+> Every number in this repo is an **upper bound**, not an expected return.
+> `CLAIMS.md` marks this on each figure.
+
+Want your own universe? The four CSVs in `data/sample/` are the entire interface.
+Replace them and `make validate` will stop you first.
+
+---
+
+## 8. Changelog (every change leaves a trace)
+
+- `v0-run` first end-to-end run
+- `v1-audit` six probes online (the first honest admission of insignificance)
+- `v2-paper` paper account and orders
+- `v3-size` capital → number of positions → cost
+
+Git tags are the course dimension: `git diff v1-audit..v2-paper` shows exactly
+what "adding a paper-trading stage" changes.

@@ -1,72 +1,89 @@
-# 裁决 H-001 — 移除动量：−3.38pp → −0.76pp → −0.22pp
+> **English** · [中文](verdict.zh.md)
 
-> **日期**：2026-10-22 · **状态**：已裁决（结论：**只是分散化，可以移除；但本次保留**）
-> **复现**：`./graveyard/h001_momentum_weight/reproduce.sh`
+# Verdict H-001 — Removing momentum: −3.38pp → −0.76pp → −0.22pp
 
-## 同一个假设，三次运行
+> **Date**: 2026-10-22 · **Status**: decided (**momentum is only diversification; removable, but kept for now**)
+> **Reproduce**: `./graveyard/h001_momentum_weight/reproduce.sh`
 
-| 版本 | 基线 CAGR | 移除动量 | **Δ** |
+## The same hypothesis, run three times
+
+| Version | Baseline CAGR | Momentum removed | **Δ** |
 |---|---|---|---|
-| v0 · 行业上限在选股**之后**剔除、不补位 | 14.69% | 11.31% | **−3.38pp** |
-| v1 · 行业容量放进选股循环 | 14.74% | 13.98% | **−0.76pp** |
-| v2 · 起点改为 warm-up 结束即入场（最终） | 14.47% | 14.25% | **−0.22pp** |
+| v0 · sector cap applied *after* selection, no refill | 14.69% | 11.31% | **−3.38pp** |
+| v1 · sector capacity inside the selection loop | 14.74% | 13.98% | **−0.76pp** |
+| v2 · enter right after the warm-up (final) | 14.47% | 14.25% | **−0.22pp** |
 
-两次实现改动，让同一个"因子贡献"从 **−3.38pp** 变成 **−0.22pp**：
-**变化量 3.1pp，是最终结论的 14 倍。**
+Two implementation changes moved the same "factor contribution" from **−3.38pp**
+to **−0.22pp**: a 3.1pp swing, **14× the final answer**.
 
-## 两次改动分别做了什么
+## What the two changes did
 
-**v0 → v1（组合构建）**
-v0 在选完 Top-12 之后再剔除超出行业上限的名字，且不补位——于是某些季度实际只持有 10 只、
-28% 现金。移除动量改变了入选名单，也就改变了"有几只被行业上限剔掉"，两次运行的现金仓位不同。
-3.38pp 里的大部分，其实是**现金拖累差**，不是因子贡献。
+**v0 → v1 (portfolio construction)**
+v0 picked Top-12 and then dropped names that breached the sector cap, without
+refilling. Some quarters therefore held only 10 names and 28% cash. Removing
+momentum changed the selected list, hence how many names got dropped, hence the
+cash level: most of the 3.38pp was **a cash-drag difference**, not factor
+contribution.
 
-**v1 → v2（入场时点）**
-v1 的回测窗口从 2014-01 开始，但 12-1 动量需要 273 个交易日 warm-up，
-所以第一个季度只能空仓——一段与策略无关的现金期。改成 warm-up 结束即入场后，
-Δ 又移动了 0.54pp。
+**v1 → v2 (entry timing)**
+v1 started the backtest in January 2014, but 12-1 momentum needs 273 trading days
+of warm-up, so the first quarter sat in cash — a cash period unrelated to the
+strategy. Starting right after the warm-up moved Δ by another 0.54pp.
 
-## 按预注册关卡裁决（v2）
+## Verdict against the pre-registered gates (v2)
 
-| 关卡 | 判据 | 实际 | 结果 |
+| Gate | Criterion | Actual | Result |
 |---|---|---|---|
-| G1 | \|ΔCAGR\| ≤ 1.0pp | −0.22pp | **通过** |
-| G2 | ΔCAGR < −1.0pp | 未达到 | 不成立 |
-| G3 | ΔSharpe ≥ −0.05 且 ΔMDD ≤ +1pp | −0.034 / +1.6pp | Sharpe 通过、MDD 轻微失败 |
+| G1 | \|ΔCAGR\| ≤ 1.0pp | −0.22pp | **pass** |
+| G2 | ΔCAGR < −1.0pp | not met | fails |
+| G3 | ΔSharpe ≥ −0.05 and ΔMDD ≤ +1pp | −0.034 / +1.6pp | Sharpe pass, MDD marginal fail |
 
-**裁决：动量只是分散化，可以移除（G1 通过）；保留 0.125 作为先验，因为 MDD 略差。**
+**Verdict: momentum is only diversification, so it can be removed (G1 passes);
+keep the 0.125 prior because drawdown is slightly worse.**
 
-## 关于预注册的那个预测
+## On the pre-registered prediction
 
-卡片里写的是"|ΔCAGR| < 0.5pp"。**在 v2 上它成立（−0.22pp），在 v0 上完全不成立（−3.38pp）。**
-同一个假设、同一份数据、同一句预测，两个相反的答案——差别只在你对"组合构建"的实现选择。
-这就是为什么 `CLAIMS.md` 必须记录代码版本与指纹，而不是只记录数字。
+The card said "\|ΔCAGR\| < 0.5pp". **It holds on v2 (−0.22pp) and fails completely on
+v0 (−3.38pp).** Same hypothesis, same data, same prediction, two opposite answers —
+the difference is only your implementation choice for portfolio construction.
+That is exactly why `CLAIMS.md` must record the code version and fingerprint, not
+just the number.
 
-## 为什么这仍然不是"动量有效"或"动量无效"
+## Why this is still neither "momentum works" nor "momentum is dead"
 
-1. 宇宙是 45 只**存活至今**的大盘股，科技权重偏高；12-1 动量在这种面板上会自动选中
-   过去一年最强的名字（NVDA / MSFT / AVGO 一类）。
-2. 三次运行里，基线的 t 值分别是 0.22 / 0.34 / 0.23——**全部在"与零无法区分"的区间内**。
-   移不移除动量，都不是一个有统计意义的选择。
-3. 要分离"真动量溢价"与"宇宙选择效应"，必须换含退市股的面板重跑（见 `docs/adr/002`）。
+1. The universe is 45 **still-listed** large caps with a tech tilt; 12-1 momentum
+   on such a panel will pick the strongest names of the past year (NVDA / MSFT /
+   AVGO and friends).
+2. Across the three runs the baseline t-stats were 0.22 / 0.34 / 0.23 — **all
+   inside "indistinguishable from zero"**. Keeping or removing momentum is not a
+   statistically meaningful choice.
+3. Separating "real momentum premium" from "universe-selection effect" requires a
+   delisting-inclusive panel (see `docs/adr/002-sample-universe.md`).
 
-## 教训（按重要性排序）
+## Lessons, in order of importance
 
-1. **先怀疑实现，再怀疑市场。** 一个 3pp 的"发现"，追下去是组合构建的实现细节。
-   参考实现里 H13 是同一个形状：机制曾以 Sharpe +0.017 被采纳，引擎 bug 修掉后变成净损失。
-2. **"通过了关卡"只等于"在当时的代码版本下通过"。** 每次改引擎，都要知道它会动哪些历史结论。
-   本次三次运行的起点、组合构建都不同——所以 `CLAIMS.md` 必须写死当前版本与指纹。
-3. **预注册的价值不是"预测准"，而是"发现自己错得有多离谱"。**
-   没有卡片的版本里，你会给 −3.38pp 编一个"动量当然重要"的解释，然后带着它下真钱。
-4. **组合构建是策略的一部分。** 同样的因子、同样的权重，只因为"行业上限在选股前还是选股后"，
-   年化就差 2.6pp。这就是 `tests/test_invariants.py` 里专门测 caps 的那条测试存在的理由。
+1. **Suspect the implementation before the market.** A 3pp "finding" turned out to
+   be a portfolio-construction detail. The reference implementation's H13 has the
+   same shape: a mechanism adopted at Sharpe +0.017 became a net loss once an
+   engine bug was fixed.
+2. **"Passed the gate" only means "passed on that code version".** Every engine
+   change can move historical conclusions — which is why `CLAIMS.md` pins the
+   version and the fingerprint.
+3. **The value of pre-registration is not being right; it is discovering how wrong
+   you were.** Without the card you would invent an after-the-fact story for
+   −3.38pp and take it to live money.
+4. **Portfolio construction is part of the strategy.** Same factors, same weights,
+   and just moving the sector cap from after selection to inside selection changes
+   annual return by 2.6pp. That is why `tests/test_invariants.py` has a dedicated
+   caps test.
 
-## 元数据（诚实披露）
+## Metadata (honest disclosure)
 
-⚠️ 卡片与裁决在同一次会话中完成，`git` 时间戳相同，**不满足严格预注册**。
-真实使用时：
+⚠️ The card and the verdict were written in the same session; their `git`
+timestamps are identical, so this does **not** satisfy strict pre-registration.
+In real use:
 
 ```bash
 git add graveyard/h00x_xxx/card.md && git commit -m "pre-register H-00x" && git tag pre-h00x
-# ... 然后才允许跑实验
+# ... only then is running the experiment allowed
 ```

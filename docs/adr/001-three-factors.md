@@ -1,33 +1,42 @@
-# ADR-001 — 为什么是这三个因子、12 只、季度调仓、等权
+> **English** · [中文](001-three-factors.zh.md)
 
-> 架构决策记录。每个决定都必须同时写下**替代方案**和**代价**，否则它只是一条偏好。
+# ADR-001 — Why three factors, 12 names, quarterly, equal weight
 
-## 决定
+> Architecture decision record. Every decision must state its **alternatives** and
+> its **price**; otherwise it is just a preference.
 
-| 维度 | 选择 | 替代方案 | 为什么不用替代方案 |
+## Decision
+
+| Dimension | Choice | Alternative | Why not |
 |---|---|---|---|
-| 因子 | FCF-Yield 0.50 / Quality 0.375 / 12-1 Momentum 0.125 | 单因子价值；增加成长/低波/应计 | 成长与应计在参考实现的修正宇宙里贡献转负；低波是负 IC。少即是可审计。 |
-| 选股数 | Top 12 | Top 20 / Top 6 | 20 只在 45 只样本里分散不了多少；6 只 × 12% 上限 = 28% 现金拖累 |
-| 再平衡 | 季度 | 月度 / 半年 | 月度换手成本翻倍且信号更快衰减；半年在样本里少赚 2pp |
-| 权重方式 | 等权 | 分数加权 / 风险平价 | 等权不依赖对分数尺度的信念；分数加权会把噪声放大 |
-| 成交时点 | 次日收盘 | 当日收盘 / 次日开盘 | 当日收盘含同日信息（前视）；开盘价数据不在样本内 |
-| 卖出 | 排名缓冲带 + 质量恶化 | 止损 / 目标价 | 止损在低换手组合上通常是负贡献；目标价需要估值模型，引入新的假设 |
+| Factors | FCF-Yield 0.50 / Quality 0.375 / 12-1 Momentum 0.125 | single-factor value; add growth / low-vol / accruals | growth and accruals turned negative in the reference implementation's corrected universe; low-vol has negative IC. Less is auditable. |
+| Number of names | Top 12 | Top 20 / Top 6 | 20 does not add diversification in a 45-name sample; 6 names × 12% cap leaves 28% cash drag |
+| Rebalance | quarterly | monthly / semiannual | monthly doubles turnover cost and the signal decays faster; semiannual earned 2pp less in-sample |
+| Weighting | equal weight | score-weighted / risk parity | equal weight does not depend on believing the score scale; score weighting amplifies noise |
+| Fill | next close | same close / next open | same close contains same-bar information (look-ahead); open prices are not in the sample |
+| Sells | rank buffer band + quality decay | stop-loss / target price | stop-losses are usually negative-contribution in a low-turnover book; target prices need a valuation model, i.e. new assumptions |
 
-## 代价（必须承认）
+## Price (must be admitted)
 
-- **等权**放弃了"更相信高分"的信息，长期会略微跑输分数加权（如果分数真的有信息）。
-- **季度**意味着最长三个月的信号滞后；在动量崩溃时反应慢。
-- **12 只**意味着单票 8.3%，任何一只的黑天鹅直接造成 ~8% 的组合冲击。
-- **次日收盘成交**在真实世界里可能买在更差的价位，slippage 8bp 可能不够。
+- **Equal weight** discards the information "believe the high score more" and will
+  underperform score weighting if the score really carries information.
+- **Quarterly** means up to three months of signal lag; it reacts slowly when
+  momentum crashes.
+- **12 names** means 8.3% per name; a single black swan directly hits the
+  portfolio by ~8%.
+- **Next-close fill** may in reality execute at worse prices; 8bps slippage may
+  not be enough.
 
-## 什么时候应该推翻这个 ADR
+## When this ADR should be overturned
 
-1. 用**含退市股的无偏面板**重跑，结论反转（这是最高优先级）。
-2. 组合规模超过 US$500k，容量与冲击成本成为约束。
-3. 连续 4 个季度实盘跑输基准且归因显示是因子失效（不是执行问题）。
+1. Re-run on a **delisting-free (unbiased) panel** and the conclusion reverses
+   (highest priority).
+2. Portfolio size above US$500k, where capacity and impact costs become binding.
+3. Four consecutive live quarters underperforming the benchmark, with attribution
+   showing factor decay (not execution).
 
-## 相关
+## Related
 
-- `config/strategy.yaml` — 唯一参数来源
-- `CLAIMS.md` — 数字口径
-- `graveyard/h001_momentum_weight/` — 因子权重的一次实际检验
+- `config/strategy.yaml` — the only parameter source
+- `CLAIMS.md` — measurement basis of every number
+- `graveyard/h001_momentum_weight/` — an actual test of one factor's weight

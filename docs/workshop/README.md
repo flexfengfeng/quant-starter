@@ -1,73 +1,84 @@
-# 一周工作坊 · 操作手册
+> **English** · [中文](README.zh.md)
 
-> 学生画像：成年人、有金融背景、新加坡、准备投真钱。
-> 目标不是"学会写量化代码"，而是**离开时能独立判断任何一套策略是否值得下注**。
-> 每天结束 = 一个 commit + 一个 git tag。tag 就是课程本身：以后 `git diff` 回看。
+# One-week workshop · operator's manual
 
----
-
-## D0 · 预习（开课前 2 小时）
-
-- 装 Python 3.11+、`pip install -e .`（或 `pip install pandas numpy pyyaml pytest`）。
-- 跑 `make run`，把终端输出截图发群里。
-- 读 `README.md` 与 `CLAIMS.md`。
-- **预期障碍**：第一次跑不通。让他自己修——这是第 0 课：环境问题是常态。
-
-## D1 · 数据与可复现
-
-| | 内容 |
-|---|---|
-| 上午 | `make validate` 逐条讲数据契约；打开 `data/sample/*.csv`；讲 PIT：为什么 `available_fundamentals` 是全系统最贵的 5 行 |
-| 下午 | 讲 ELT 与 ETL 的差别**为什么是"可复现性"**；跑两次 `make run`，对比 `returns_fingerprint`；然后故意改动一个数据文件再跑，看指纹变红 |
-| 产出 | `v0-run` tag；`docs/lab-log.md` 第一条记录 |
-| 验收问题 | 换台机器重跑，数字为什么必须一样？如果不一样，第一个怀疑哪个文件？ |
-
-## D2 · 回测审计（最重要的一天）
-
-| | 内容 |
-|---|---|
-| 上午 | `make audit` 六项逐条讲，重点是第 1 项（数据时点带 3.8pp）和第 6 项（t=0.22 → FAIL） |
-| 下午 | **红队**：给一份"看起来 Sharpe 2.0"的假报告（老师准备），让学生找出至少 5 个偏差；然后交换检查彼此的报告 |
-| 产出 | `v1-audit` tag + 一份审计报告 |
-| 验收问题 | 为什么 t=2.0 也不够？（多重检验：试 30 个配置，最好成绩 ~11% 纯属运气） |
-
-## D3 · 策略结构与实验纪律
-
-| | 内容 |
-|---|---|
-| 上午 | 讲 `portfolio.py` 的三个约束与缓冲带；用 `make explain` 看今日因子百分位；读 `graveyard/h13_crowding_clamp/` 与 `h001` |
-| 下午 | 学生自己写一张假设卡（模板在 graveyard），**先 commit 再跑**；跑完无论结果如何都写裁决 |
-| 产出 | 一张卡 + 一份裁决（大概率被证伪——这是成功） |
-| 验收问题 | 你的假设在被证伪之前，就已经写清了"什么结果算证伪"吗？ |
-
-## D4 · 纸面部署与成本（新加坡视角）
-
-| | 内容 |
-|---|---|
-| 上午 | `make orders` 生成目标订单；讲幂等（OpenD 超时会"看起来失败但已成交"）、对账、kill switch；`state/paper.json` 记账 |
-| 下午 | `make size`：资金 → 仓位数量 → 往返成本；30% 股息预扣；**US$60,000 遗产税悬崖**；IBKR vs moomoo 的真实成本差 |
-| 产出 | `v2-paper` tag + 第一周纸面记录 |
-| 验收问题 | $20,000 的资金，为什么不该买 20 只？算一下每单固定费用的 bps。 |
-
-## D5 · 个性化与实盘契约
-
-| | 内容 |
-|---|---|
-| 上午 | 按资金规模重定 `top_n` / `max_weight`；决定宇宙（45 只够不够）；写 12 个月自学路线（`LEARNING_PATH.md` 的 L2/L3） |
-| 下午 | 签"实盘契约"：1 个季度纸面 → 20% 资金 → 4 个季度 → 全额；预先写死 kill switch；写下"什么情况下我会关掉这套系统" |
-| 产出 | `v3-size` tag + 契约（PDF 或 markdown，双方签字） |
-| 验收问题 | 如果四季度后跑输基准 5pp，你怎么区分"因子失效"还是"运气不好"？ |
+> Student profile: adult, finance background, Singapore, about to deploy real money.
+> The goal is not "learn to write quant code"; it is **to leave able to judge, on
+> their own, whether any strategy deserves a bet**.
+> Each day ends with one commit and one git tag. The tags are the course:
+> `git diff` is how they will re-read it.
 
 ---
 
-## 老师课前要准备的
+## D0 · Pre-work (2 hours before the class)
 
-1. 一份"假的好报告"（Sharpe 2.0、含 3 个明显偏差：前视、无成本、幸存者宇宙）。
-2. 学生自己的 GitHub 仓库：把这套代码 push 成模板，让学生 fork（而不是 clone 老师的）。
-3. 一张成本表（印刷版）：moomoo SG vs IBKR SG，含每单固定费用、FX、股息预扣。
-4. 明确一句话：**这一周不产生可实盘的策略，只产生一个能被审计的系统。**
+- Install Python 3.11+ and `pip install -e .` (or `pip install pandas numpy pyyaml pytest`).
+- Run `make run` and post the terminal output in the group chat.
+- Read `README.md` and `CLAIMS.md`.
+- **Expected obstacle**: it will not work the first time. Let them fix it — that
+  is lesson zero: environment problems are normal.
 
-## 时间不够时砍什么
+## D1 · Data and reproducibility
 
-按优先级保留：D2 审计 > D1 可复现 > D4 纸面/成本 > D3 实验 > D5 个性化。
-如果只有三天：合并 D1+D2（数据与审计），跳过 D3 的实验写作，D4 只做成本与 kill switch。
+| | Content |
+|---|---|
+| Morning | Walk through `make validate` line by line; open `data/sample/*.csv`; PIT: why `available_fundamentals` is the most expensive five lines in the system |
+| Afternoon | Why ELT vs ETL is about **reproducibility**, not sophistication; run `make run` twice and compare `returns_fingerprint`; then change a data file and watch the fingerprint go red |
+| Output | tag `v0-run`; first entry in `docs/lab-log.md` |
+| Acceptance | Re-run on another machine — why must the numbers match? If they don't, which file do you suspect first? |
+
+## D2 · Backtest audit (the most important day)
+
+| | Content |
+|---|---|
+| Morning | Walk through the six probes, emphasising probe 1 (data-timing band) and probe 6 (t=0.23 → FAIL) |
+| Afternoon | **Red team**: hand out a fake "Sharpe 2.0" report (prepared by the teacher) and have them find at least five biases; then swap reports and attack each other's |
+| Output | tag `v1-audit` + one audit report |
+| Acceptance | Why is t=2.0 not enough? (Multiple testing: try 30 configs, the best has ~11% chance of being pure luck.) |
+
+## D3 · Strategy structure and experiment discipline
+
+| | Content |
+|---|---|
+| Morning | The three constraints and the buffer band in `portfolio.py`; use `make explain` to see today's factor percentiles; read `graveyard/h13_crowding_clamp/` and `h001` |
+| Afternoon | Write a hypothesis card (template in `graveyard`), **commit before running**, and write the verdict whichever way it goes |
+| Output | one card + one verdict (it will probably be falsified — that is a success) |
+| Acceptance | Before it was falsified, did the card already say what would count as falsification? |
+
+## D4 · Paper deployment and cost (Singapore view)
+
+| | Content |
+|---|---|
+| Morning | `make orders` produces target orders; idempotency (OpenD can "fail" after the order is already accepted), reconciliation, kill switch; book-keeping in `state/paper.json` |
+| Afternoon | `make size`: capital → number of names → round-trip cost; 30% dividend withholding; the **US$60,000 estate-tax cliff**; the real cost difference between IBKR and moomoo |
+| Output | tag `v2-paper` + the first week of paper records |
+| Acceptance | With US$20,000, why should you not buy 20 names? Compute the fixed fee in bps. |
+
+## D5 · Personalisation and the live-money contract
+
+| | Content |
+|---|---|
+| Morning | Re-derive `top_n` / `max_weight` from capital; decide the universe (is 45 enough?); write a 12-month self-study plan (L2/L3 of `LEARNING_PATH.md`) |
+| Afternoon | Sign the **live-money contract**: one quarter paper → 20% of capital → four quarters → full amount; pre-define the kill switch; write down "under what conditions will I switch this system off" |
+| Output | tag `v3-size` + the contract (PDF or markdown, signed by both) |
+| Acceptance | If after four quarters you are 5pp behind the benchmark, how do you distinguish "factor decay" from "bad luck"? |
+
+---
+
+## What the teacher prepares in advance
+
+1. A fake "good report" (Sharpe 2.0, with three obvious biases: look-ahead, no
+   costs, survivor universe).
+2. The student's own GitHub repo: push this code as a template and have them
+   **fork** it (not clone the teacher's).
+3. A printed cost table: moomoo SG vs IBKR SG, including fixed fee per order, FX,
+   dividend withholding.
+4. One clear sentence: **this week produces no deployable strategy, only an
+   auditable system.**
+
+## If time runs short
+
+Keep, in priority order: D2 audit > D1 reproducibility > D4 paper/cost > D3
+experiments > D5 personalisation.
+With only three days: merge D1+D2 (data and audit), skip D3's experiment writing,
+and reduce D4 to cost and the kill switch.

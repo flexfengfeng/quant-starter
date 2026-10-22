@@ -1,13 +1,16 @@
-# Lab log — 每次只改一个变量
+> **English** · [中文](lab-log.zh.md)
 
-| # | 日期 | 改了什么 | 改动前 | 改动后 | Δ | t 值 | 我的预测 | 对了吗？ | 结论 |
+# Lab log — one variable per run
+
+| # | Date | What changed | Before | After | Δ | t-stat | My prediction | Was I right? | Verdict |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | | （示例）top_n 12→6 | CAGR 14.69% | | | | 波动更大、收益更低 | | 6×12%上限=28%现金，测的是现金拖累 |
+| 1 | | (example) top_n 12→6 | CAGR 14.47% | | | | more volatility, lower return | | 6 names × 12% cap = 28% cash; this measures cash drag |
 | 2 | | | | | | | | | |
 
-## 记录规则
+## Recording rules
 
-1. 一次只改一个参数；改了第二个，就不知道是谁的功劳。
-2. "我的预测"必须写在跑之前。
-3. 结论栏只能写三选一：**采纳 / 拒绝 / 无法判定**。写"看起来不错"视为没写。
-4. 任何"采纳"都必须能通过 `make audit` 六项。
+1. Change one parameter at a time; change two and you no longer know which one did it.
+2. "My prediction" must be written *before* the run.
+3. The verdict column accepts only three values: **adopt / reject / inconclusive**.
+   "Looks good" counts as not writing anything.
+4. Any "adopt" must pass all six `make audit` probes.
