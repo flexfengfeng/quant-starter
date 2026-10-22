@@ -41,6 +41,9 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+#: Overridable with ``--source``: after this repo is moved out of the reference
+#: implementation's tree, the default path no longer exists, but the committed
+#: sample data does — this script is provenance, not a runtime dependency.
 PARENT_CACHE = ROOT.parent / "data" / "cache"
 OUT = ROOT / "data" / "sample"
 
@@ -192,6 +195,21 @@ def build_fundamentals(ticker: str) -> list[dict]:
 
 
 def main() -> int:
+    global PARENT_CACHE
+    import argparse
+
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--source", default=str(PARENT_CACHE),
+                    help="path to the reference implementation's data/cache "
+                         "(needs kline/all.csv and financials/US.*.json)")
+    args = ap.parse_args()
+    PARENT_CACHE = Path(args.source)
+    if not (PARENT_CACHE / "kline" / "all.csv").exists():
+        print(f"source cache not found: {PARENT_CACHE}\n"
+              f"The committed CSV in data/sample/ is all you need to run the system.\n"
+              f"To regenerate it, pass --source /path/to/<reference>/data/cache")
+        return 1
+
     prices_all = pd.read_csv(
         PARENT_CACHE / "kline" / "all.csv",
         usecols=["code", "time_key", "close", "volume"],
