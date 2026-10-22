@@ -1,0 +1,46 @@
+ticker,name,sector
+AAPL,Apple,Information Technology
+ABT,Abbott,Health Care
+ADBE,Adobe,Information Technology
+AMAT,Applied Materials,Information Technology
+AMGN,Amgen,Health Care
+AVGO,Broadcom,Information Technology
+BA,Boeing,Industrials
+CAT,Caterpillar,Industrials
+COP,ConocoPhillips,Energy
+COST,Costco,Consumer Staples
+CSCO,Cisco,Information Technology
+CVX,Chevron,Energy
+DIS,Walt Disney,Communication Services
+GE,GE Aerospace,Industrials
+GILD,Gilead,Health Care
+GOOGL,Alphabet,Communication Services
+HD,Home Depot,Consumer Discretionary
+HON,Honeywell,Industrials
+IBM,IBM,Information Technology
+INTC,Intel,Information Technology
+JNJ,Johnson & Johnson,Health Care
+KO,Coca-Cola,Consumer Staples
+LIN,Linde,Materials
+LMT,Lockheed Martin,Industrials
+MCD,McDonald's,Consumer Discretionary
+META,Meta Platforms,Communication Services
+MRK,Merck,Health Care
+MSFT,Microsoft,Information Technology
+NEE,NextEra Energy,Utilities
+NFLX,Netflix,Communication Services
+NKE,Nike,Consumer Discretionary
+NVDA,NVIDIA,Information Technology
+ORCL,Oracle,Information Technology
+PEP,PepsiCo,Consumer Staples
+PFE,Pfizer,Health Care
+PG,Procter & Gamble,Consumer Staples
+QCOM,Qualcomm,Information Technology
+SBUX,Starbucks,Consumer Discretionary
+TMO,Thermo Fisher,Health Care
+TXN,Texas Instruments,Information Technology
+UNH,UnitedHealth,Health Care
+UNP,Union Pacific,Industrials
+VZ,Verizon,Communication Services
+WMT,Walmart,Consumer Staples
+XOM,Exxon Mobil,Energy

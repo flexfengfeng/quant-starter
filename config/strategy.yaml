@@ -1,0 +1,47 @@
+# =====================================================================
+# quant-starter — 唯一参数文件
+# 学生的每一步调整都从这里开始：改一个值 → 重跑 → 看数字怎么动。
+# 每个值后面写清楚"为什么是这个数"，以及"改了会怎样"。
+# =====================================================================
+
+data:
+  prices: data/sample/prices.csv
+  fundamentals: data/sample/fundamentals.csv
+  universe: data/sample/universe.csv
+  benchmark: SPY
+  # 样本数据给的是"财季期末日"，不是公告日。45 天是 SEC 10-Q 的上限：
+  # 期末后 45 天内公告才可能被看到 → 最早 45 天后才允许使用。
+  # 若你的数据源给的是真实公告日，改成 0。
+  disclosure_lag_days: 45
+
+backtest:
+  start: "2014-04-01"   # 2013 年是 data warm-up（12-1 动量需要 273 个交易日）
+  end: "2026-09-30"
+  rebalance: quarterly        # quarterly | semiannual（L1 实验：换成半年会怎样）
+  execution_lag_days: 1       # 决策日收盘 → 下一交易日收盘成交。改成 0 试试。
+
+strategy:
+  top_n: 12                   # 45 只样本里选 12 只；$50k 账户每只约 $4,000
+  factors:
+    fcf_yield: 0.500          # 自由现金流收益率
+    quality: 0.375            # ROE + 毛利率 − 杠杆（截面 z 分数）
+    momentum: 0.125           # 12-1 动量
+  momentum_lookback: 252      # 交易日
+  momentum_skip: 21           # 跳过最近一个月（反转效应）
+
+portfolio:
+  max_weight: 0.12            # 单票上限 12%
+  max_sector: 0.35            # 行业上限 35%（12 只 × 2 只同行业 ≈ 16.7%，不会触发；
+                              # 这个上限防的是"某行业突然全进前 12"）
+  min_cash: 0.02
+  sell_rank_buffer: 2.0       # 排名跌出 Top 24 才卖（缓冲带，压住换手）
+  rebalance_band: 0.01        # 小于 NAV 1% 的调仓不做（压住等权再平衡的漂移噪声）
+                              # L1 实验：改成 0 看换手与成本怎么涨
+  quality_sell_pct: 0.25      # 质量落到底部 25% …
+  quality_sell_decline: 0.30  # … 且较上期再跌 30% 才强制卖出
+
+costs:
+  commission_bps: 0.0         # moomoo SG 美股佣金 $0
+  slippage_bps: 8.0           # 单边滑点假设 8bp（大盘股、收盘成交的保守估计）
+  fx_one_way_bps: 0.0         # SGD→USD 一次性成本；按你的券商填 30–100
+  dividend_tax_drag_annual: 0.0  # 美股股息 30% 预扣；只在汇报"到手收益"时打开
