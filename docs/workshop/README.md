@@ -31,8 +31,8 @@
 
 | | Content |
 |---|---|
-| Morning | Walk through the six probes, emphasising probe 1 (data-timing band) and probe 6 (t=0.23 → FAIL) |
-| Afternoon | **Red team**: hand out a fake "Sharpe 2.0" report (prepared by the teacher) and have them find at least five biases; then swap reports and attack each other's |
+| Morning | Walk through the six probes, emphasising probe 1 (data-timing band, 0.3pp) and probe 6 (t=0.23 → FAIL) |
+| Afternoon | **Red team**: hand out a fake "Sharpe 2.0" report (prepared by the teacher) and have them find at least five biases; then swap reports and attack each other's. Kit: [`d2-redteam/`](d2-redteam/) — 11 planted biases, teacher-only |
 | Output | tag `v1-audit` + one audit report |
 | Acceptance | Why is t=2.0 not enough? (Multiple testing: try 30 configs, the best has ~11% chance of being pure luck.) |
 
@@ -68,7 +68,10 @@
 ## What the teacher prepares in advance
 
 1. A fake "good report" (Sharpe 2.0, with three obvious biases: look-ahead, no
-   costs, survivor universe).
+   costs, survivor universe). Ready to print:
+   [`d2-redteam/report.html`](d2-redteam/report.html); the answer key sits next
+   to it and is never handed out. Rebuild with
+   `python docs/workshop/d2-redteam/kit.py build`.
 2. The student's own GitHub repo: push this code as a template and have them
    **fork** it (not clone the teacher's).
 3. A printed cost table: moomoo SG vs IBKR SG, including fixed fee per order, FX,

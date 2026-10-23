@@ -1,0 +1,323 @@
+{
+  "meta": {
+    "plant": "report.html",
+    "manager": "Marlowe Ridge Capital (fictional)",
+    "window": "2014-04-01 .. 2026-09-30",
+    "live_from": "2019-10",
+    "note": "Source of truth for the D2 red-team exercise. Both answer keys are generated from this file, so the English and the Chinese cannot drift. Numbers in braces are filled by kit.py from the fabricated series.",
+    "leak_tokens": [
+      "Marlowe",
+      "Marlowe Ridge"
+    ]
+  },
+  "biases": [
+    {
+      "id": "b01_window_mislabelled",
+      "severity": "medium",
+      "title": {
+        "en": "The headline window is not the window on the label",
+        "zh": "标题数字的窗口，和标签上的窗口不是同一个"
+      },
+      "where": {
+        "en": "Hero strip, first card; Executive summary, first sentence.",
+        "zh": "首屏四格的第一格；执行摘要第一句。"
+      },
+      "quote": {
+        "en": "since inception, April 2014",
+        "zh": "since inception, April 2014"
+      },
+      "why": {
+        "en": "The {live_cagr} / Sharpe {live_sharpe} / volatility {live_vol} are the numbers of the **live** window, 2019-10 to 2026-09 ({live_years} years). The appendix compounds the full 12.5 years to **{full_cagr}**: the {n_backtest} months before the live date compound at {backtest_cagr}, the {n_live} live months at {live_cagr}. A genuine {live_cagr} over 12.5 years would be {headline_multiple} ({headline_final}); the chart ends at {full_multiple} ({full_final}).",
+        "zh": "{live_cagr} / Sharpe {live_sharpe} / 波动率 {live_vol} 都是**实盘**窗口（2019-10 至 2026-09，{live_years} 年）的数字。附录把完整 12.5 年复利下来只有 **{full_cagr}**：实盘之前的 {n_backtest} 个月复利是 {backtest_cagr}，实盘的 {n_live} 个月是 {live_cagr}。如果真有 {live_cagr} 跑满 12.5 年，应是 {headline_multiple}（{headline_final}）；而曲线终点是 {full_multiple}（{full_final}）。"
+      },
+      "detect": {
+        "en": "Compound the annual table, or read the chart's end value. Then compound 2019-10 → 2026-09 off the heatmap: you recover exactly {live_cagr}. The confession is in Notes 1: \"went live on 1 October 2019\".",
+        "zh": "把年度表复利，或直接看曲线终值。再从热力图上复利 2019-10 → 2026-09：正好得到 {live_cagr}。自白写在脚注 1 里：\"went live on 1 October 2019\"。"
+      },
+      "calibration": {
+        "en": "`CLAIMS.md` §0 always states the window before the number (2014-04-01 .. 2026-09-30). A performance number without a window is not a number, it is a sales figure.",
+        "zh": "`CLAIMS.md` 第 0 节永远先写窗口再写数字（2014-04-01 .. 2026-09-30）。不带窗口的业绩数字不是数字，是销售话术。"
+      }
+    },
+    {
+      "id": "b02_drawdown_understated",
+      "severity": "medium",
+      "title": {
+        "en": "Maximum drawdown smaller than a single month",
+        "zh": "最大回撤比单月跌幅还小"
+      },
+      "where": {
+        "en": "Hero card 3; Executive summary ¶3; Risk section.",
+        "zh": "首屏第三格；执行摘要第三段；Risk 一节。"
+      },
+      "quote": {
+        "en": "never lost more than -8.9% from a peak",
+        "zh": "never lost more than -8.9% from a peak"
+      },
+      "why": {
+        "en": "A peak-to-trough loss can never be smaller than the worst single month. The appendix's June 2022 cell is **{worst_month}**, so the maximum drawdown is at least that; compounding the heatmap gives **{full_mdd}** for the full window.",
+        "zh": "峰谷回撤不可能小于最差单月跌幅。附录中 2022 年 6 月那一格是 **{worst_month}**，所以最大回撤至少是这么多；把热力图按月复利算下来，全窗口是 **{full_mdd}**。"
+      },
+      "detect": {
+        "en": "Find the reddest cell in the heatmap and compare it with the quoted maximum drawdown. Then compute the running drawdown from the monthly series — two lines of arithmetic.",
+        "zh": "在热力图里找最红的那一格，和引用的最大回撤比大小。再用月度序列算一遍滚动回撤，两行算术。"
+      },
+      "calibration": {
+        "en": "This repo reports max drawdown −26.87% next to the CAGR in `CLAIMS.md` §1, and probe 4 (concentration) exists because drawdowns hide in single names.",
+        "zh": "本仓库在 `CLAIMS.md` 第 1 节把最大回撤 −26.87% 和 CAGR 并列写；probe 4（集中度）存在，就是因为回撤藏在单只股票里。"
+      }
+    },
+    {
+      "id": "b03_pit_lookahead",
+      "severity": "obvious",
+      "title": {
+        "en": "Point-in-time look-ahead in the fundamental score",
+        "zh": "基本面打分里的时点前视"
+      },
+      "where": {
+        "en": "\"How the strategy works\" → Rebalance.",
+        "zh": "\"How the strategy works\" → Rebalance。"
+      },
+      "quote": {
+        "en": "Factor scores use the quarter that ended on the rebalance date — the filings are public by then.",
+        "zh": "Factor scores use the quarter that ended on the rebalance date — the filings are public by then."
+      },
+      "why": {
+        "en": "The rebalance is on the last trading day of the quarter; the 10-Q for that quarter is filed about 40–45 days later (10-K: 60–90). Using it at the quarter-end close is a six-week peek. \"The filings are public by then\" is simply false.",
+        "zh": "调仓日在季末最后一个交易日；这一季的 10-Q 大约 40–45 天后才提交（10-K 要 60–90 天）。在季末收盘就用上它，等于提前六周偷看。\"The filings are public by then\" 这句话是假的。"
+      },
+      "detect": {
+        "en": "Check the dates, not the prose: a quarter ends 30 Sep, the filing deadline is 40 days later. Any score computed at the quarter-end close from that quarter's statements is peeking.",
+        "zh": "对日期，不对文字：季末是 9 月 30 日，披露期限在 40 天之后。凡是季末收盘就用上本季报表的打分，都是在偷看。"
+      },
+      "calibration": {
+        "en": "`LEARNING_PATH.md` L2 exercise C: set `disclosure_lag_days` to −45 and watch audit probe 1. On this deliberately boring book the band is 0.3pp; audit.py's own comment: \"the sign is not the test, the magnitude is\".",
+        "zh": "`LEARNING_PATH.md` 的 L2 练习 C：把 `disclosure_lag_days` 设为 −45，看 audit probe 1。在这个刻意做得很无聊的组合上，带宽只有 0.3pp；audit.py 的注释自己说：\"符号不是检验，量级才是\"。"
+      }
+    },
+    {
+      "id": "b04_same_bar_fill",
+      "severity": "medium",
+      "title": {
+        "en": "Signals from the close, filled at the same close",
+        "zh": "用收盘价出信号，又用同一个收盘价成交"
+      },
+      "where": {
+        "en": "\"How the strategy works\" → Execution.",
+        "zh": "\"How the strategy works\" → Execution。"
+      },
+      "quote": {
+        "en": "Orders are worked in the closing auction of the rebalance day",
+        "zh": "Orders are worked in the closing auction of the rebalance day"
+      },
+      "why": {
+        "en": "The scores are computed from the same closing prices and the same quarter-end fundamentals, and the fill happens in that same closing auction. You cannot know the close before it prints. Even with perfectly honest PIT data, this is the cheapest form of look-ahead.",
+        "zh": "打分用的是同一个收盘价和同一个季末基本面，成交又发生在同一个收盘集合竞价里。收盘价还没印出来，你不可能知道它。就算 PIT 数据完全干净，这也是最廉价的一种前视。"
+      },
+      "detect": {
+        "en": "Look for \"signals from the close, filled at the close\" in one sentence. Ask for order timestamps and the actual fill prices.",
+        "zh": "在一句话里同时出现\"收盘出信号、收盘成交\"，就是它。索要下单时间戳和实际成交价。"
+      },
+      "calibration": {
+        "en": "`make audit` probe 2: same-close 14.89% vs next-day 14.47% — a quarterly book pays +0.42pp for realism.",
+        "zh": "`make audit` probe 2：同日收盘成交 14.89% vs 次日成交 14.47% —— 一个季度调仓的组合，为\"更真实\"要付 0.42pp。"
+      }
+    },
+    {
+      "id": "b05_gross_of_costs",
+      "severity": "obvious",
+      "title": {
+        "en": "Gross returns, with a 1.5% + 15% fee schedule",
+        "zh": "毛收益，而且管理费是 1.5% + 15%"
+      },
+      "where": {
+        "en": "Fees section; Notes 5.",
+        "zh": "Fees 一节；脚注 5。"
+      },
+      "quote": {
+        "en": "Returns are gross of management fees, performance fees, transaction costs, FX conversion and dividend withholding tax.",
+        "zh": "Returns are gross of management fees, performance fees, transaction costs, FX conversion and dividend withholding tax."
+      },
+      "why": {
+        "en": "The manager's own fee is 1.5% a year plus 15% of the excess. On a {live_cagr} gross return that is roughly 3.5–5pp of the headline, before 8–24bps of slippage per side and the 30% US dividend withholding a Singapore investor pays.",
+        "zh": "管理人自己的费率是每年 1.5% 再加超额收益的 15%。在 {live_cagr} 的毛收益上，这大概吃掉 3.5–5pp，还没算每边 8–24bps 的滑点，以及新加坡投资者要交的 30% 美国股息预扣税。"
+      },
+      "detect": {
+        "en": "Read the fee section and the fine print together, then recompute: gross − 1.5% − 15% × (gross − benchmark) − costs − withholding.",
+        "zh": "把费率表和免责小字一起读，然后自己重算：毛收益 − 1.5% − 15% ×（毛收益 − 基准）− 交易成本 − 预扣税。"
+      },
+      "calibration": {
+        "en": "This repo's entire cost drag is 0.06pp/yr at 8bps and 68% turnover (`CLAIMS.md` §1); Singapore dividend withholding alone is ~0.4–0.5pp/yr (§3.6). A 1.5% fee is 25 times the repo's whole cost bill.",
+        "zh": "本仓库全部成本拖累是 0.06pp/年（8bps、换手 68%，`CLAIMS.md` 第 1 节）；光是新加坡股息预扣税就约 0.4–0.5pp/年（第 3.6 节）。1.5% 的管理费是本仓库全部成本账单的 25 倍。"
+      }
+    },
+    {
+      "id": "b06_survivor_universe",
+      "severity": "obvious",
+      "title": {
+        "en": "Today's index, applied to yesterday",
+        "zh": "拿今天的指数，套在昨天上"
+      },
+      "where": {
+        "en": "\"How the strategy works\" → Universe; Notes 3.",
+        "zh": "\"How the strategy works\" → Universe；脚注 3。"
+      },
+      "quote": {
+        "en": "as of the September 2026 index review, applied to the full history",
+        "zh": "as of the September 2026 index review, applied to the full history"
+      },
+      "why": {
+        "en": "Applying the current S&P 500 to 2014 deletes every company that was later acquired, delisted, or removed for being bad. The result is not a strategy return, it is a \"which companies survived\" return — and it is flattered further because the survivors are exactly the mega-caps that drove the index.",
+        "zh": "把 2026 年的标普成分股套到 2014 年，等于删掉了所有后来被收购、退市、或因表现差被剔除的公司。这算出来的不是策略收益，而是\"哪些公司活下来了\"的收益 —— 而且活下来的恰好就是推高指数的那几只巨头，所以更被美化。"
+      },
+      "detect": {
+        "en": "The phrase \"applied to the full history\". Then ask for one delisted name, one acquisition, one index deletion in the trade blotter. There will be none, because the universe was built after the fact.",
+        "zh": "抓住\"applied to the full history\"这句话。然后要求在成交记录里举出一个退市、一个被收购、一个被剔除的名字。举不出来，因为股票池是事后建的。"
+      },
+      "calibration": {
+        "en": "Reference implementation in `CLAIMS.md` §3.1: adding 165 delisted names took CAGR from 13.11% to 9.89% and excess from −0.75pp to −3.69pp. This repo's 45 names are all still listed, so every number here is an upper bound (README §7).",
+        "zh": "`CLAIMS.md` 第 3.1 节里的参考实现：补进 165 只退市股后，CAGR 从 13.11% 掉到 9.89%，超额从 −0.75pp 变成 −3.69pp。本仓库这 45 只全部仍然在市，所以这里每个数字都是上界（README 第 7 节）。"
+      }
+    },
+    {
+      "id": "b07_benchmark_asymmetry",
+      "severity": "medium",
+      "title": {
+        "en": "Total-return strategy against a price-index benchmark",
+        "zh": "全收益策略，对比价格指数基准"
+      },
+      "where": {
+        "en": "Executive summary ¶1; Notes 2.",
+        "zh": "执行摘要第一段；脚注 2。"
+      },
+      "quote": {
+        "en": "S&P 500 price index",
+        "zh": "S&P 500 price index"
+      },
+      "why": {
+        "en": "The fund holds the stocks, so its returns include dividends; the benchmark excludes them. Over 2014–2026 that is ~1–1.5pp a year of free \"excess\" before any skill — about a tenth of the claimed {excess}pp.",
+        "zh": "基金持有股票，所以收益含股息；基准却不含。2014–2026 年间这白送约 1–1.5pp/年的\"超额\"，哪怕毫无选股能力 —— 大约是所声称 {excess}pp 的十分之一。"
+      },
+      "detect": {
+        "en": "\"price index\" and \"dividends are not reinvested\" in the same document. Then compare with the total-return version of the same index.",
+        "zh": "同一份文件里同时出现\"price index\"和\"dividends are not reinvested\"。再拿同一指数的全收益版本对比。"
+      },
+      "calibration": {
+        "en": "`CLAIMS.md` §3.4 lists exactly this bias in this repo (\"no dividends … understates the benchmark by roughly 1–1.5pp/yr\"). The honest repo is not allowed to hide it; the fake report is.",
+        "zh": "`CLAIMS.md` 第 3.4 节明确列出了本仓库的同一个偏差（\"没有股息……大约低估基准 1–1.5pp/年\"）。诚实的仓库不许藏它，假报告藏了。"
+      }
+    },
+    {
+      "id": "b08_multiple_testing",
+      "severity": "medium",
+      "title": {
+        "en": "t = 2.0 after 34 tries",
+        "zh": "试了 34 组参数之后的 t = 2.0"
+      },
+      "where": {
+        "en": "Notes 4 and 6.",
+        "zh": "脚注 4 和脚注 6。"
+      },
+      "quote": {
+        "en": "34 candidate factor combinations were evaluated",
+        "zh": "34 candidate factor combinations were evaluated"
+      },
+      "why": {
+        "en": "With 34 tries, the best t-statistic under the null is expected to be about 2.0–2.2. Calling t = 2.0 \"significant at 5%\" is exactly the error the search creates: the 5% threshold has already been spent on the other 33 attempts.",
+        "zh": "试 34 次，在零假设下最好的 t 值本来就会到 2.0–2.2 左右。把 t = 2.0 说成\"5% 显著\"正是搜索造成的错误：5% 这个阈值已经被另外 33 次尝试用光了。"
+      },
+      "detect": {
+        "en": "Count the variants in the notes, then apply Bonferroni (0.05 / 34 → |t| ≈ 3.2) or the Harvey–Liu–Zhu bar for a new factor (t > 3.0).",
+        "zh": "数一数脚注里的试验次数，然后套 Bonferroni（0.05 / 34 → |t| ≈ 3.2），或者 Harvey–Liu–Zhu 对新因子的门槛（t > 3.0）。"
+      },
+      "calibration": {
+        "en": "`AGENTS.md`: try 30 configs and the best has ~11% chance of being pure luck. Audit probe 6: \"Bar for a *new* factor is t>3.0, not 2.0\".",
+        "zh": "`AGENTS.md`：试 30 组参数，最好的那组约有 11% 的概率纯属运气。Audit probe 6：\"新因子的门槛是 t > 3.0，不是 2.0\"。"
+      }
+    },
+    {
+      "id": "b09_tstat_without_basis",
+      "severity": "subtle",
+      "title": {
+        "en": "A t-statistic with no series behind it",
+        "zh": "一个背后没有时间序列的 t 值"
+      },
+      "where": {
+        "en": "Notes 6.",
+        "zh": "脚注 6。"
+      },
+      "quote": {
+        "en": "significant at the 5% level on a two-sided test.",
+        "zh": "significant at the 5% level on a two-sided test."
+      },
+      "why": {
+        "en": "A t-statistic needs a mean, a dispersion and an n. The report supplies none: no tracking error, no information coefficient, no monthly excess series, no number of independent observations. You cannot recompute it, so you cannot falsify it — and 12.5 years of annual data is about 13 observations, far too few for t = 2.0 to mean anything. One consistency check the report cannot survive: {excess}pp of annual excess over 12.5 years with a tracking error of roughly 11% implies t ≈ 3.2. A t of 2.0 needs a tracking error near 18%, which a 0.62-beta long-only book does not produce — so 2.0 was not computed from the number that is quoted.",
+        "zh": "t 值需要均值、离散度和样本量。这份报告一个都没给：没有跟踪误差、没有 IC、没有月度超额序列、没有独立观测数。你没法重算，也就没法证伪 —— 而 12.5 年的年度数据只有约 13 个观测，根本撑不起 t = 2.0 的任何含义。 还有一处它过不了的自洽检查：12.5 年、年化超额 {excess}pp、跟踪误差约 11%，意味着 t ≈ 3.2。要得到 t = 2.0，跟踪误差得接近 18%，而一个 beta 0.62 的纯多头组合做不到 —— 所以这个 2.0 根本不是用它所引用的那个超额算出来的。"
+      },
+      "detect": {
+        "en": "Ask for the excess-return series. If the answer is \"the model\" or \"the administrator has it\", the number is decoration.",
+        "zh": "索要超额收益序列。如果回答是\"模型里有\"或\"管理员那边有\"，这个数字就是装饰品。"
+      },
+      "calibration": {
+        "en": "`make audit` probe 6 prints the t-statistic **with its inputs** (daily excess, mean IC, number of rebalances = 50). A number whose inputs are hidden is not evidence.",
+        "zh": "`make audit` probe 6 打印 t 值时**连输入一起打印**（日度超额、平均 IC、调仓次数 = 50）。输入被藏起来的数字不是证据。"
+      }
+    },
+    {
+      "id": "b10_no_reproducible_basis",
+      "severity": "medium",
+      "title": {
+        "en": "\"On request\": no returns file, no blotter, no fingerprint",
+        "zh": "\"可应要求提供\"：没有收益文件、没有成交记录、没有指纹"
+      },
+      "where": {
+        "en": "Notes 7; footer.",
+        "zh": "脚注 7；页脚。"
+      },
+      "quote": {
+        "en": "Audited financial statements, a complete trade blotter and the monthly returns file are available to qualified investors on request.",
+        "zh": "Audited financial statements, a complete trade blotter and the monthly returns file are available to qualified investors on request."
+      },
+      "why": {
+        "en": "\"On request\" means never. There is no monthly returns file, no trade list, no input fingerprint, no named administrator, custodian or auditor. The report cannot be reproduced, so it cannot be checked — which is precisely what D1 of this workshop is about.",
+        "zh": "\"可应要求提供\"等于永远提供不了。没有月度收益文件、没有成交清单、没有输入指纹、没有具名的管理人/托管人/审计师。报告无法复现，也就无法核查 —— 这恰恰是工作坊 D1 的全部内容。"
+      },
+      "detect": {
+        "en": "List what is absent: monthly returns file, trade blotter, data fingerprint, auditor's name, administrator, custodian, and one sentence saying who verified the numbers.",
+        "zh": "列出缺了什么：月度收益文件、成交记录、数据指纹、审计师名字、行政管理人、托管人，以及一句\"谁验证了这些数字\"。"
+      },
+      "calibration": {
+        "en": "`make run` writes `reports/manifest.json` with an input fingerprint and a returns fingerprint; the D1 acceptance question is \"re-run on another machine — do the numbers match?\". A report that cannot do this is an advertisement.",
+        "zh": "`make run` 会写 `reports/manifest.json`，里面有输入指纹和收益指纹；D1 的验收问题是\"换一台机器重跑，数字对得上吗？\"。做不到这一点的报告，是广告。"
+      }
+    },
+    {
+      "id": "b11_2022_anomaly",
+      "severity": "subtle",
+      "title": {
+        "en": "A long-only 0.62-beta book that \"avoided\" a −19.4% market",
+        "zh": "一个纯多头、beta 0.62 的组合，\"躲过了\" −19.4% 的市场"
+      },
+      "where": {
+        "en": "Executive summary ¶3; Risk section.",
+        "zh": "执行摘要第三段；Risk 一节。"
+      },
+      "quote": {
+        "en": "in 2022, when the S&P 500 fell 19.4%, the strategy returned +2.0%",
+        "zh": "in 2022, when the S&P 500 fell 19.4%, the strategy returned +2.0%"
+      },
+      "why": {
+        "en": "A long-only equity book with beta {beta}, no shorting and \"no market timing\" should have lost roughly 12% in 2022 (0.62 × −19.4%). Returning +2.0% requires market timing, shorting, or an undisclosed allocation — the report denies the first two in the same paragraph. One of its three sentences is false.",
+        "zh": "一个纯多头股票组合，beta {beta}，不做空，还宣称\"不做择时\"，在 2022 年应该亏约 12%（0.62 × −19.4%）。要做出 +2.0%，只能靠择时、做空、或没披露的资产配置 —— 而报告在同一段里否认了前两个。三句话里必有一句是假的。"
+      },
+      "detect": {
+        "en": "beta × benchmark return first; then ask for the holdings on 31 Dec 2021 and 30 Jun 2022 and the contribution of each name. The absence of an attribution table is itself the answer.",
+        "zh": "先算 beta × 基准收益；再要 2021-12-31 和 2022-06-30 的持仓，以及每只股票的贡献。拿不出业绩归因表，本身就是答案。"
+      },
+      "calibration": {
+        "en": "Audit probe 5 exists for this: in this repo beta 0.83 with annualised alpha +2.98%, and the probe's comment warns that \"if alpha is no better than the t-stat below, the 'excess' is beta timing\".",
+        "zh": "Audit probe 5 就是为这件事存在的：本仓库 beta 0.83、年化 alpha +2.98%，probe 注释警告\"如果 alpha 不比下面的 t 值更强，所谓超额就是 beta 择时\"。"
+      }
+    }
+  ]
+}
